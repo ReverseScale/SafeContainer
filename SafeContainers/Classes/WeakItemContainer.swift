@@ -5,8 +5,9 @@ public struct WeakItemContainer<Element> {
     
     private var weakItemsTable = NSHashTable<AnyObject>.weakObjects()
 //    fileprivate var dispatchQueue: DispatchQueue = DispatchQueue(label: "com.weakItemContainer.queue")
-    fileprivate let _lock = NSLock()
-    
+//    fileprivate let _lock = NSLock()
+    fileprivate let semaphore = DispatchSemaphore(value: 1)
+
 //    public init(withElements elements: [Element]? = nil) {
 //        guard let item = elements as AnyObject? else {
 //            print("💣Not AnyObject passed to append!")
@@ -40,9 +41,11 @@ public struct WeakItemContainer<Element> {
 //        weakItemsTable.add(item)
 //        objc_sync_exit(self)
         
-        _lock.lock()
+//        _lock.lock()
+        semaphore.wait()
         weakItemsTable.add(item)
-        _lock.unlock()
+//        _lock.unlock()
+        semaphore.signal()
     }
     
     /// 移除元素
@@ -62,9 +65,11 @@ public struct WeakItemContainer<Element> {
 //        weakItemsTable.remove(item)
 //        objc_sync_exit(self)
         
-        _lock.lock()
+//        _lock.lock()
+        semaphore.wait()
         weakItemsTable.remove(item)
-        _lock.unlock()
+//        _lock.unlock()
+        semaphore.signal()
     }
     
     /// 移除全部元素
@@ -78,9 +83,11 @@ public struct WeakItemContainer<Element> {
 //        weakItemsTable.removeAllObjects()
 //        objc_sync_exit(self)
         
-        _lock.lock()
+//        _lock.lock()
+        semaphore.wait()
         weakItemsTable.removeAllObjects()
-        _lock.unlock()
+//        _lock.unlock()
+        semaphore.signal()
     }
     
     /// 集合数量

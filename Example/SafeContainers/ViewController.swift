@@ -19,10 +19,15 @@ class ViewController: UIViewController {
     
     fileprivate let _lock = NSLock()
     
+    fileprivate let semaphore = DispatchSemaphore(value: 1)
+    
+    // iOS 10 以后支持
+//    fileprivate let unfairLock = os_unfair_lock_t.allocate(capacity: 1)
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-//        safeHashContainer()
+        safeHashContainer()
 
         safeArrayTest()
 
@@ -30,6 +35,8 @@ class ViewController: UIViewController {
 //        testLockTimerObjcSync()
 //        testLockTimerDispatchQueueSync()
 //        testLockTimerLock()
+//        testLockTimerSemaphore()
+//        testLockTimeRosUnfair()
     }
 }
 
@@ -147,4 +154,28 @@ extension ViewController {
         print("⏱方法耗时为：millisecond: \(CLongLong(round((CACurrentMediaTime() - starts)*1000)))")
 //        ⏱方法耗时为：millisecond: 4670
     }
+    
+    func testLockTimerSemaphore() {
+        let starts = CACurrentMediaTime()
+        for _ in 0 ..< 10000000 {
+            semaphore.wait()
+            semaphore.signal()
+        }
+        print("⏱方法耗时为：millisecond: \(CLongLong(round((CACurrentMediaTime() - starts)*1000)))")
+//        ⏱方法耗时为：millisecond: 4413
+    }
+    
+//    func testLockTimeRosUnfair() {
+//        if #available(iOS 10.0, *) {
+//            let starts = CACurrentMediaTime()
+//            for _ in 0 ..< 10000000 {
+//                os_unfair_lock_lock(unfairLock)
+//                os_unfair_lock_unlock(unfairLock)
+//            }
+//            print("⏱方法耗时为：millisecond: \(CLongLong(round((CACurrentMediaTime() - starts)*1000)))")
+//            //        ⏱方法耗时为：millisecond: 4665
+//        } else {
+//            // Fallback on earlier versions
+//        }
+//    }
 }

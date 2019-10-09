@@ -5,16 +5,21 @@ public struct SafeArrayContainer<Element> {
     // MARK: - 属性
     fileprivate var internalElements = Array<Element>()
 //    fileprivate var dispatchQueue: DispatchQueue = DispatchQueue(label: "com.safeArrayContainer.queue")
-    fileprivate let _lock = NSLock()
+//    fileprivate let _lock = NSLock()
+    fileprivate let semaphore = DispatchSemaphore(value: 1)
+
 
     public init(withElements elements: [Element]? = nil) {
         guard let elements = elements else { return }
         
-        _lock.lock()
+//        _lock.lock()
+        semaphore.wait()
+        
 //        dispatchQueue.sync {
             self.internalElements.append(contentsOf: elements)
 //        }
-        _lock.unlock()
+//        _lock.unlock()
+        semaphore.signal()
     }
 }
 
@@ -25,11 +30,13 @@ public extension SafeArrayContainer {
         get {
             var elements: [Element] = []
             
-            _lock.lock()
+//            _lock.lock()
+            semaphore.wait()
 //            dispatchQueue.sync {
                 elements.append(contentsOf: internalElements)
 //            }
-            _lock.unlock()
+//            _lock.unlock()
+            semaphore.signal()
             return elements
         }
     }
@@ -39,11 +46,13 @@ public extension SafeArrayContainer {
     /// - Parameter elements: 添加到 SafeArrayContainer 的元素
     mutating func reset(withElements elements: [Element]) {
         
-        _lock.lock()
+//        _lock.lock()
+        semaphore.wait()
 //        dispatchQueue.sync {
             self.internalElements = elements
 //        }
-        _lock.unlock()
+//        _lock.unlock()
+        semaphore.signal()
     }
     
     /// 线程安全附加单个元素
@@ -51,11 +60,13 @@ public extension SafeArrayContainer {
     /// - Parameter element: 元素添加
     mutating func append(_ element: Element) {
         
-        _lock.lock()
+//        _lock.lock()
+        semaphore.wait()
 //        dispatchQueue.sync {
             internalElements.append(element)
 //        }
-        _lock.unlock()
+//        _lock.unlock()
+        semaphore.signal()
     }
     
     /// 线程安全附加的元素集合
@@ -63,11 +74,13 @@ public extension SafeArrayContainer {
     /// - Parameter elements: 集合添加
     mutating func append(contentsOf elements: [Element]) {
         
-        _lock.lock()
+//        _lock.lock()
+        semaphore.wait()
 //        dispatchQueue.sync {
             self.internalElements.append(contentsOf: elements)
 //        }
-        _lock.unlock()
+//        _lock.unlock()
+        semaphore.signal()
     }
     
     /// 线程安全移除指定元素
@@ -80,10 +93,12 @@ public extension SafeArrayContainer {
                 return print("💣Index \(index) no element can be remove!")
 //                return assertionFailure("Index \(index) no element can be remove!")
             }
-        _lock.lock()
+//        _lock.lock()
+        semaphore.wait()
             self.internalElements.remove(at: index)
 //        }
-        _lock.unlock()
+//        _lock.unlock()
+        semaphore.signal()
     }
     
     /// Map 返回一个数组，其中包含由提供的转换创建的元素
@@ -96,11 +111,13 @@ public extension SafeArrayContainer {
         var safeArray = SafeArrayContainer<T>()
         
         var results: [T] = []
-        _lock.lock()
+//        _lock.lock()
+        semaphore.wait()
 //        try dispatchQueue.sync {
             results = try self.internalElements.map(transform)
 //        }
-        _lock.unlock()
+//        _lock.unlock()
+        semaphore.signal()
         safeArray.append(contentsOf: results)
         
         return safeArray
@@ -118,11 +135,13 @@ public extension SafeArrayContainer {
         
         var results: [Element] = []
         
-        _lock.lock()
+//        _lock.lock()
+        semaphore.wait()
 //        try dispatchQueue.sync {
             results = try self.internalElements.filter(isIncluded)
 //        }
-        _lock.unlock()
+//        _lock.unlock()
+        semaphore.signal()
         
         safeArray.append(contentsOf: results)
         
