@@ -14,29 +14,13 @@ class ViewController: UIViewController {
     let intElementsOne = [1, 2, 3, 4]
     let intElementsTwo = [4, 5, 6, 7]
     let stringElements = ["Abc", "Ced"]
-    
-    fileprivate var dispatchQueue: DispatchQueue = DispatchQueue(label: "com.testLock.queue")
-    
-    fileprivate let _lock = NSLock()
-    
-    fileprivate let semaphore = DispatchSemaphore(value: 1)
-    
-    // iOS 10 以后支持
-//    fileprivate let unfairLock = os_unfair_lock_t.allocate(capacity: 1)
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        safeHashContainer()
 
         safeArrayTest()
 
-        // lock 性能对比
-//        testLockTimerObjcSync()
-//        testLockTimerDispatchQueueSync()
-//        testLockTimerLock()
-//        testLockTimerSemaphore()
-//        testLockTimeRosUnfair()
+        safeHashContainer()
     }
 }
 
@@ -88,20 +72,18 @@ extension ViewController {
     
     func testArrMap() {
         let safeArray = SafeArrayContainer<String>(withElements: stringElements)
-        
         let mappedArray = safeArray.map { "i" + $0 }
         
         print("====:Map mappedArray.elements \(mappedArray.elements)")
-//        "iAbc", "iCed"
+        // print:  "iAbc", "iCed"
     }
     
     func testArrFiltered() {
         let safeArray = SafeArrayContainer<Int>(withElements: intElementsOne)
-        
         let filteredArray = safeArray.filter { $0 != 1 }
         
         print("====:Filtered filteredArray.elements \(filteredArray.elements)")
-//        2,3,4
+        // print:  2,3,4
     }
 }
 
@@ -120,62 +102,4 @@ extension ViewController {
         print("====:count \(container.count)")
         print("====:item \(container.items)")
     }
-}
-
-// MARK: - Lock 性能
-extension ViewController {
-    func testLockTimerObjcSync() {
-        let starts = CACurrentMediaTime()
-        for _ in 0 ..< 10000000 {
-            objc_sync_enter(self)
-            objc_sync_exit(self)
-        }
-        print("⏱方法耗时为：millisecond: \(CLongLong(round((CACurrentMediaTime() - starts)*1000)))")
-//        ⏱方法耗时为：millisecond: 5579
-    }
-    
-    func testLockTimerDispatchQueueSync() {
-        let starts = CACurrentMediaTime()
-        for _ in 0 ..< 10000000 {
-            dispatchQueue.sync {
-                
-            }
-        }
-        print("⏱方法耗时为：millisecond: \(CLongLong(round((CACurrentMediaTime() - starts)*1000)))")
-//        ⏱方法耗时为：millisecond: 8668
-    }
-    
-    func testLockTimerLock() {
-        let starts = CACurrentMediaTime()
-        for _ in 0 ..< 10000000 {
-            _lock.lock()
-            _lock.unlock()
-        }
-        print("⏱方法耗时为：millisecond: \(CLongLong(round((CACurrentMediaTime() - starts)*1000)))")
-//        ⏱方法耗时为：millisecond: 4670
-    }
-    
-    func testLockTimerSemaphore() {
-        let starts = CACurrentMediaTime()
-        for _ in 0 ..< 10000000 {
-            semaphore.wait()
-            semaphore.signal()
-        }
-        print("⏱方法耗时为：millisecond: \(CLongLong(round((CACurrentMediaTime() - starts)*1000)))")
-//        ⏱方法耗时为：millisecond: 4413
-    }
-    
-//    func testLockTimeRosUnfair() {
-//        if #available(iOS 10.0, *) {
-//            let starts = CACurrentMediaTime()
-//            for _ in 0 ..< 10000000 {
-//                os_unfair_lock_lock(unfairLock)
-//                os_unfair_lock_unlock(unfairLock)
-//            }
-//            print("⏱方法耗时为：millisecond: \(CLongLong(round((CACurrentMediaTime() - starts)*1000)))")
-//            //        ⏱方法耗时为：millisecond: 4665
-//        } else {
-//            // Fallback on earlier versions
-//        }
-//    }
 }

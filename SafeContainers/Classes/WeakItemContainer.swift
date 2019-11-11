@@ -4,22 +4,8 @@ import Foundation
 public struct WeakItemContainer<Element> {
     
     private var weakItemsTable = NSHashTable<AnyObject>.weakObjects()
-//    fileprivate var dispatchQueue: DispatchQueue = DispatchQueue(label: "com.weakItemContainer.queue")
-//    fileprivate let _lock = NSLock()
     fileprivate let semaphore = DispatchSemaphore(value: 1)
 
-//    public init(withElements elements: [Element]? = nil) {
-//        guard let item = elements as AnyObject? else {
-//            print("💣Not AnyObject passed to append!")
-////            assertionFailure("Not AnyObject passed to append!")
-//            return
-//        }
-//
-//        dispatchQueue.sync {
-//            self.weakItemsTable.add(item)
-//        }
-//    }
-    
     public init() {
         
     }
@@ -28,23 +14,11 @@ public struct WeakItemContainer<Element> {
     /// - Parameter element: 元素
     public func append(_ element: Element) {
         guard let item = element as AnyObject? else {
-            print("💣Not AnyObject passed to append!")
-//            assertionFailure("Not AnyObject passed to append!")
+            print("💣 Not AnyObject passed to append!")
             return
         }
-        
-//        dispatchQueue.sync {
-//            self.weakItemsTable.add(item)
-//        }
-        
-//        objc_sync_enter(self)
-//        weakItemsTable.add(item)
-//        objc_sync_exit(self)
-        
-//        _lock.lock()
         semaphore.wait()
         weakItemsTable.add(item)
-//        _lock.unlock()
         semaphore.signal()
     }
     
@@ -52,41 +26,19 @@ public struct WeakItemContainer<Element> {
     /// - Parameter element: 元素
     public func remove(_ element: Element) {
         guard let item = element as AnyObject? else {
-            print("💣Not AnyObject passed to remove!")
-//            assertionFailure("Not AnyObject passed to remove!")
+            print("💣 Not AnyObject passed to remove!")
             return
         }
-        
-//        dispatchQueue.sync {
-//            self.weakItemsTable.remove(item)
-//        }
-        
-//        objc_sync_enter(self)
-//        weakItemsTable.remove(item)
-//        objc_sync_exit(self)
-        
-//        _lock.lock()
+
         semaphore.wait()
         weakItemsTable.remove(item)
-//        _lock.unlock()
         semaphore.signal()
     }
     
     /// 移除全部元素
     public func removeAll() {
-        
-//        dispatchQueue.sync {
-//            self.weakItemsTable.removeAllObjects()
-//        }
-        
-//        objc_sync_enter(self)
-//        weakItemsTable.removeAllObjects()
-//        objc_sync_exit(self)
-        
-//        _lock.lock()
         semaphore.wait()
         weakItemsTable.removeAllObjects()
-//        _lock.unlock()
         semaphore.signal()
     }
     
